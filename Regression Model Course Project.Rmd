@@ -1,0 +1,80 @@
+---
+title: Regression Models - A Case Testing for Different Transmission Modes' Effect on MPG
+author: "Zhen Yu"
+date: "2019/12/8"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r library}
+library(ggplot2)
+library(dplyr)
+library(datasets)
+? mtcars
+```
+## Executive Summary
+By examing the data from the 1974 Motor Trend US magazine which comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973–74 models), the key finding of this analysis is that manual transmission on average has a better miles per gallon (mpg) than its counterpart the automatic transmission.
+
+
+## Exploratory Data Analysis
+After loading the dataset, I analyse “mtcars” using exploratory data analysis techniques and regression models to compare the effect of different transmission techniques i.e. Automatic or Manual on MPG (Miles per Galon).It's able to see the variable am has influence on the mpg
+```{r}
+summary(lm(mpg ~ . - 1, data = mtcars))$coef
+```
+
+
+## Question 1
+Is an automatic or manual transmission better for MPG
+
+To answer this question, I did a boxplot from which it's clear to see manual transmission has better MPG than automatic's
+```{r}
+boxplot(mpg~am, data = mtcars, col = c("orange", "red"), xlab = "Mode of Transmission (0 = Automatic, 1 = Manual)", ylab = "Miles per Galon", main = "MPG vs Mode of Transmission")
+```
+
+I found, the mean of manual transmission is 7.25 MPG higher than automatic transmission.
+```{r}
+aggregate(mpg ~ am, data = mtcars, mean)
+```
+
+## Question 2 
+Quantify the MPG difference between automatic and manual transmissions
+
+Model Selection
+A variety of regression models are possible. I did the stepwise model selection to achieve the best model to quantify the differences
+```{r}
+start_model <- lm(mpg~., data = mtcars)
+best_model <- step(start_model, direction = "both")
+```
+
+The best model obtained using the above method has wt, am, and qsec variables. About 84.97% of the variance is explained by this model. Per unit weight change negatively with mpg (-3.91 miles for every 1,000lb). For the qsec part, when the accelaration speed increased by 1 unit, the mpg increased 1.23 miles. So does the change of mode of transmission, the manual transmission is 2.93mpg better than automatic transmission:
+
+```{r}
+summary(best_model)
+```
+
+```{r}
+t.test(mtcars$mpg~mtcars$am)
+```
+With assumption that all other conditions remain unchanged. Since p-value = 0.001374 which is less than 0.05, we conclude that manual transmission is better than automatic transmission for MPG and reject the null hypothesis that there is no difference in MPG.
+
+## Residual Plot and Diagnostic
+
+Using below residual plot, I found that independence condition is supported as plot seems randomly scattered and normally distributed as indicated in Q-Q plot.
+```{r}
+par(mfrow = c(2, 2))
+plot(best_model)
+```
+
+
+## Appendix
+Scatterplot for mtcars
+```{r}
+pairs(mtcars)
+```
+
+
+
+
+
+
